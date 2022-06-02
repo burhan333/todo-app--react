@@ -37,6 +37,12 @@
         display: flex;
         justify-content: space-between;
 
+        .active
+        {
+            color: black;
+            font-weight: 600;
+        }
+
         p
         {
             width: 150px;

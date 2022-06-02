@@ -3,12 +3,15 @@ import Logo from '../../assets/images/logo.png'
 
 const Todo = () => {
 
+    // const [createdAt, setCreatedAt] = useState('')
+    // const [modifiedDate, setModifiedDate] = useState('')
     const [taskName, setTaskName] = useState('')
-    const [createdAt, setCreatedAt] = useState('')
     const [dueDate, setDueDate] = useState('')
-    const [modifiedDate, setModifiedDate] = useState('')
     const [priority, setPriority] = useState('')
+    const [priorityNum, setPriorityNum] = useState(0)
     const [sortOrder, setSortOrder] = useState('asc')
+    const [sortBy, setSortBy] = useState('')
+    const [today, setToday] = useState('')
 
     const [data, setData] = useState([
         {
@@ -57,28 +60,49 @@ const Todo = () => {
             isDone: true
         },
     ])
-
+    
     useEffect(() => {
-
+        getDate()
     }, [])
+
+    const getDate = () => {
+        const d = new Date()
+        let day = d.getDate()
+        let month = d.getMonth()
+        month = month+1
+        const year = d.getFullYear()
+
+        if (month < 10)
+        {
+            console.log('run1');
+            month = '0' + month;
+        }
+        if (day < 10)
+        {
+            console.log('run2');
+            day = '0' + day;
+        }
+        setToday(`${day}-${month}-${year}`)
+    }
 
     const toggleSortCreated = () => {
         data.sort(function (a, b) {
             if(sortOrder === 'asc')
             {
                 setSortOrder('desc')
-                var item1 = a.createdAt.split('-'),
+                const item1 = a.createdAt.split('-'),
                     item2 = b.createdAt.split('-');
                 return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
             }
             else if(sortOrder === 'desc')
             {
                 setSortOrder('asc')
-                var item2 = a.createdAt.split('-'),
+                const item2 = a.createdAt.split('-'),
                     item1 = b.createdAt.split('-');
                 return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
             }
         });
+        setSortBy('created')
     }
 
     const toggleSortDue = () => {
@@ -86,18 +110,19 @@ const Todo = () => {
             if(sortOrder === 'asc')
             {
                 setSortOrder('desc')
-                var item1 = a.dueDate.split('-'),
+                const item1 = a.dueDate.split('-'),
                     item2 = b.dueDate.split('-');
                 return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
             }
             else if(sortOrder === 'desc')
             {
                 setSortOrder('asc')
-                var item2 = a.dueDate.split('-'),
+                const item2 = a.dueDate.split('-'),
                     item1 = b.dueDate.split('-');
                 return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
             }
         });
+        setSortBy('due')
     }
 
     const toggleSortModified = () => {
@@ -105,18 +130,19 @@ const Todo = () => {
             if(sortOrder === 'asc')
             {
                 setSortOrder('desc')
-                var item1 = a.modifiedDate.split('-'),
+                const item1 = a.modifiedDate.split('-'),
                     item2 = b.modifiedDate.split('-');
                 return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
             }
             else if(sortOrder === 'desc')
             {
                 setSortOrder('asc')
-                var item2 = a.modifiedDate.split('-'),
+                const item2 = a.modifiedDate.split('-'),
                     item1 = b.modifiedDate.split('-');
                 return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
             }
         });
+        setSortBy('modified')
     }
 
     const toggleSortTask = () => {
@@ -130,6 +156,7 @@ const Todo = () => {
             setSortOrder('asc')
             data.sort((a,b) => (a.taskName < b.taskName) ? 1 : ((b.taskName < a.taskName) ? -1 : 0))
         }
+        setSortBy('task')
     }
 
     const toggleSortPriority = () => {
@@ -143,6 +170,7 @@ const Todo = () => {
             setSortOrder('asc')
             data.sort((a,b) => b.priorityNum - a.priorityNum)
         }
+        setSortBy('priority')
     }
 
     const handleOrder = (value, index) => {
@@ -166,9 +194,36 @@ const Todo = () => {
         }
     }
 
-    const handleSubmit = () => {
-        setData([...data, {taskName, createdAt: 'dsaas', dueDate}])
+    const handleCheckBox = (index) => {
+        const tempData = data
+        tempData[index].isDone === true ? tempData[index].isDone = false : tempData[index].isDone = true
+        setData([...tempData])
     }
+
+    const handlePriority = (e) => {
+        const value = e.target.value
+        if (value === 'Low')
+        {
+            setPriorityNum(1)
+        }
+        else if (value === 'Medium')
+        {
+            setPriorityNum(2)
+        }
+        else if (value === 'High')
+        {
+            setPriorityNum(3)
+        }
+        setPriority(e.target.value)
+    }
+
+    const handleSubmit = () => {
+        const temp = dueDate.split('-').reverse().join('-')
+        const newTask = {taskName, createdAt: today, dueDate: temp, modifiedDate: today, priority, priorityNum, isDone: false}
+        setData([...data, newTask])
+    }
+
+    console.log('data', data);
 
     return(
         <div className="todo">
@@ -179,11 +234,11 @@ const Todo = () => {
             <div className="todo_body">
                 <div className="todo_head">
                     <p>S.NO</p>
-                    <p onClick={toggleSortTask}>TASK NAME</p>
-                    <p onClick={toggleSortCreated}>CREATED AT</p>
-                    <p onClick={toggleSortDue}>DUE DATE</p>
-                    <p onClick={toggleSortModified}>MODIFIED DATE</p>
-                    <p onClick={toggleSortPriority}>PRIORITY</p>
+                    <p className={sortBy === 'task' ? 'active' : ''} onClick={toggleSortTask}>TASK NAME {sortBy === 'task' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
+                    <p className={sortBy === 'created' ? 'active' : ''} onClick={toggleSortCreated}>CREATED AT {sortBy === 'created' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
+                    <p className={sortBy === 'due' ? 'active' : ''} onClick={toggleSortDue}>DUE DATE {sortBy === 'due' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
+                    <p className={sortBy === 'modified' ? 'active' : ''} onClick={toggleSortModified}>MODIFIED DATE {sortBy === 'modified' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
+                    <p className={sortBy === 'priority' ? 'active' : ''} onClick={toggleSortPriority}>PRIORITY {sortBy === 'priority' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
                     <p>MARK AS DONE</p>
                     <p>REORDER TASK</p>
                 </div>
@@ -196,8 +251,8 @@ const Todo = () => {
                             <p>{item.dueDate}</p>
                             <p>{item.modifiedDate}</p>
                             <p>{item.priority}</p>
-                            <input type="checkbox" checked={item.isDone ? true : false} />
-                            <p><span onClick={() => handleOrder('up', index)}>UP</span> <span onClick={() => handleOrder('down', index)}>DOWN</span></p>
+                            <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
+                            <p><button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}>UP</button> <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}>DOWN</button></p>
                         </div>
                     )
                 })}
@@ -206,8 +261,15 @@ const Todo = () => {
                 <h1>ADD TASK</h1>
                 <input type="text" placeholder='Task Name' onChange={(e) => setTaskName(e.target.value)} />
                 <br />
-                <button onClick={handleSubmit}>ADD</button>
                 <input type="date" min="2022-06-02" onChange={(e) => {setDueDate(e.target.value); console.log(e.target.value);}} />
+                <br />
+                <select onChange={(e) => handlePriority(e)} defaultValue={'DEFAULT'}>
+                    <option value="DEFAULT" disabled>SELECT PRIORITY</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+                <button onClick={handleSubmit} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
             </div>
         </div>
     )
