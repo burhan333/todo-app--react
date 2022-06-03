@@ -12,58 +12,93 @@ const Todo = () => {
     const [sortOrder, setSortOrder] = useState('asc')
     const [sortBy, setSortBy] = useState('')
     const [today, setToday] = useState('')
+    const [renameIndex, setRenameIndex] = useState(-1)
+    const [editIndex, setEditIndex] = useState(-1)
 
     const [data, setData] = useState([
         {
             taskName: 'Study in canada',
             createdAt: '06-01-2019',
-            dueDate: '09-06-2022',
+            dueDate: '02-06-2018',
             modifiedDate: '07-01-2019',
             priority: 'Low',
             priorityNum: 1,
-            isDone: true
+            isDone: true,
+            isLate: false,
         },
         {
             taskName: 'Development',
             createdAt: '29-09-2020',
-            dueDate: '05-10-2020',
+            dueDate: '03-06-2022',
             modifiedDate: '02-10-2020',
             priority: 'Medium',
             priorityNum: 2,
-            isDone: false
+            isDone: false,
+            isLate: false,
         },
         {
             taskName: 'Go the park',
             createdAt: '02-04-2022',
-            dueDate: '10-04-2022',
+            dueDate: '03-06-2021',
             modifiedDate: '04-04-2022',
             priority: 'High',
             priorityNum: 3,
-            isDone: false
+            isDone: false,
+            isLate: false,
         },
         {
             taskName: 'Deployment on friday',
             createdAt: '25-01-2021',
-            dueDate: '15-02-2021',
+            dueDate: '15-05-2022',
             modifiedDate: '05-02-2021',
             priority: 'High',
             priorityNum: 3,
-            isDone: true
+            isDone: true,
+            isLate: false,
         },
         {
             taskName: 'Deployment',
-            createdAt: '12-12-2018',
+            createdAt: '03-06-2022',
             dueDate: '25-12-2018',
             modifiedDate: '19-12-2018',
             priority: 'High',
             priorityNum: 3,
-            isDone: true
+            isDone: true,
+            isLate: false,
         },
     ])
     
     useEffect(() => {
         getDate()
-    }, [])
+        handleDueDate()
+    }, [today])
+
+    const handleDueDate = () => {
+        const array = []
+        data.forEach((item, index) => {
+            let obj = {...data[index]}
+            const tempToday = today.split('-')
+            const tempDue = data[index].dueDate.split('-')
+    
+            if (tempToday[2] > tempDue[2])
+            {
+                obj.isLate = true
+            }
+            else if (tempToday[1] > tempDue[1])
+            {
+                obj.isLate = true
+            }
+            else if (tempToday[0] > tempDue[0])
+            {
+                obj.isLate = true
+            }
+
+            array.push(obj)
+        })
+        setData(array)
+    }
+
+    // console.log('data', data);
 
     const getDate = () => {
         const d = new Date()
@@ -74,12 +109,10 @@ const Todo = () => {
 
         if (month < 10)
         {
-            console.log('run1');
             month = '0' + month;
         }
         if (day < 10)
         {
-            console.log('run2');
             day = '0' + day;
         }
         setToday(`${day}-${month}-${year}`)
@@ -217,13 +250,29 @@ const Todo = () => {
         setPriority(e.target.value)
     }
 
+    const editTaskName = (e, index) => {
+        const newTaskName = e.target.value
+        const newData = data
+        newData[index].taskName = newTaskName
+        setData([...newData])
+    }
+
+    const handleEditIndex = (index) => {
+        setEditIndex(index)
+        setTaskName(data[index].taskName)
+        setDueDate(data[index].dueDate)
+        setPriority(data[index].priority)
+    }
+
     const handleSubmit = () => {
         const temp = dueDate.split('-').reverse().join('-')
-        const newTask = {taskName, createdAt: today, dueDate: temp, modifiedDate: today, priority, priorityNum, isDone: false}
+        const newTask = {taskName, createdAt: today, dueDate: temp, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false}
         setData([...data, newTask])
     }
 
-    console.log('data', data);
+    console.log('today', today);
+    // console.log('task', taskName);
+    console.log('due date', dueDate);
 
     return(
         <div className="todo">
@@ -246,9 +295,12 @@ const Todo = () => {
                     return(
                         <div className="todo_task" key={index}>
                             <p>{index+1}</p>
-                            <p>{item.taskName}</p>
+                            <input type="text" disabled={renameIndex === index ? false : true} value={item.taskName} onChange={(e) => editTaskName(e, index)} />
+                            <button onClick={() => setRenameIndex(renameIndex === -1 ? index : -1)}>{renameIndex === index ? 'done' : 'edit'}</button>
+                            <button onClick={() => handleEditIndex(index)}> EDIT</button>
+                            {/* <p>{item.taskName}</p> */}
                             <p>{item.createdAt}</p>
-                            <p>{item.dueDate}</p>
+                            <p className={item.isLate === true ? 'late' : ''}>{item.dueDate}</p>
                             <p>{item.modifiedDate}</p>
                             <p>{item.priority}</p>
                             <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
@@ -261,13 +313,26 @@ const Todo = () => {
                 <h1>ADD TASK</h1>
                 <input type="text" placeholder='Task Name' onChange={(e) => setTaskName(e.target.value)} />
                 <br />
-                <input type="date" min="2022-06-02" onChange={(e) => {setDueDate(e.target.value); console.log(e.target.value);}} />
+                <input type="date" min={today.split('-').reverse().join('-')} onChange={(e) => setDueDate(e.target.value)} />
                 <br />
                 <select onChange={(e) => handlePriority(e)} defaultValue={'DEFAULT'}>
                     <option value="DEFAULT" disabled>SELECT PRIORITY</option>
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
                     <option value="High">High</option>
+                </select>
+                <button onClick={handleSubmit} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
+            </div>
+            <div>
+                <h1>EDIT TASK</h1>
+                <input type="text" placeholder='Task Name' value={taskName && taskName} onChange={(e) => setTaskName(e.target.value)} />
+                <br />
+                <input type="date" min={today.split('-').reverse().join('-')} value={dueDate && dueDate} onChange={(e) => {setDueDate(e.target.value); console.log('123', e.target.value);}} />
+                <br />
+                <select onChange={(e) => handlePriority(e)}>
+                    <option value="Low" selected={editIndex !== -1 && data[editIndex].priority === 'Low' ? true : false}>Low</option>
+                    <option value="Medium" selected={editIndex !== -1 && data[editIndex].priority === 'Medium' ? true : false}>Medium</option>
+                    <option value="High" selected={editIndex !== -1 && data[editIndex].priority === 'High' ? true : false}>High</option>
                 </select>
                 <button onClick={handleSubmit} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
             </div>
