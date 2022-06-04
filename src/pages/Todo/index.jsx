@@ -7,6 +7,7 @@ const Todo = () => {
     // const [modifiedDate, setModifiedDate] = useState('')
     const [taskName, setTaskName] = useState('')
     const [dueDate, setDueDate] = useState('')
+    const [newDueDate, setNewDueDate] = useState('')
     const [priority, setPriority] = useState('')
     const [priorityNum, setPriorityNum] = useState(0)
     const [sortOrder, setSortOrder] = useState('asc')
@@ -14,14 +15,19 @@ const Todo = () => {
     const [today, setToday] = useState('')
     const [renameIndex, setRenameIndex] = useState(-1)
     const [editIndex, setEditIndex] = useState(-1)
+    const [location, setLocation] = useState('')
+    const [lat, setLat] = useState(0)
+    const [long, setLong] = useState(0)
+    const API_KEY = process.env.REACT_APP_API_KEY
 
     const [data, setData] = useState([
         {
             taskName: 'Study in canada',
             createdAt: '06-01-2019',
-            dueDate: '02-06-2018',
+            dueDate: '05-06-2022',
             modifiedDate: '07-01-2019',
             priority: 'Low',
+            location: 'Karachi',
             priorityNum: 1,
             isDone: true,
             isLate: false,
@@ -29,9 +35,10 @@ const Todo = () => {
         {
             taskName: 'Development',
             createdAt: '29-09-2020',
-            dueDate: '03-06-2022',
+            dueDate: '05-06-2022',
             modifiedDate: '02-10-2020',
             priority: 'Medium',
+            location: 'Lahore',
             priorityNum: 2,
             isDone: false,
             isLate: false,
@@ -42,6 +49,7 @@ const Todo = () => {
             dueDate: '03-06-2021',
             modifiedDate: '04-04-2022',
             priority: 'High',
+            location: 'Islamabad',
             priorityNum: 3,
             isDone: false,
             isLate: false,
@@ -52,6 +60,7 @@ const Todo = () => {
             dueDate: '15-05-2022',
             modifiedDate: '05-02-2021',
             priority: 'High',
+            location: 'Karachi',
             priorityNum: 3,
             isDone: true,
             isLate: false,
@@ -62,16 +71,27 @@ const Todo = () => {
             dueDate: '25-12-2018',
             modifiedDate: '19-12-2018',
             priority: 'High',
+            location: 'Karachi',
             priorityNum: 3,
             isDone: true,
             isLate: false,
         },
     ])
-    
+
+    console.log('API_KEY', process.env.REACT_APP_API_KEY);
+
     useEffect(() => {
         getDate()
+        getLatLong()
+    }, [])
+    
+    useEffect(() => {
         handleDueDate()
     }, [today])
+
+    useEffect(() => {
+        getLocation()
+    }, [lat, long])
 
     const handleDueDate = () => {
         const array = []
@@ -99,6 +119,43 @@ const Todo = () => {
     }
 
     // console.log('data', data);
+
+    const getLocation = () => {
+        if (lat && long)
+        {
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat + ',' + long} &key=${API_KEY}`
+            fetch(url, { method: 'GET' }).then(res => res.json())
+            .then(res => {
+                let mainarr = res.results
+                let city = ''
+                var english = /^[0-9A-Za-z\s\-]+$/
+    
+                for (let i = 0; i < mainarr.length; i++)
+                {
+                    for (let j = 0; j < mainarr[i].address_components.length; j++) {
+                        if (english.test(mainarr[i].address_components[j].short_name)) {
+                            if (mainarr[i].address_components[j].types.includes('locality')) {
+                                city = mainarr[i].address_components[j].short_name ? mainarr[i].address_components[j].short_name : city;
+                            }
+                        }
+                    }
+                    if(city) break
+                }
+                console.log('city', city);
+                setLocation(city)
+            })
+        }
+    }
+
+    const getLatLong = () => {
+        navigator.geolocation.getCurrentPosition((e) => {
+            setLat(e.coords.latitude);
+            setLong(e.coords.longitude);
+        })
+    }
+
+    console.log('location', location);
+    console.log('lat', lat);
 
     const getDate = () => {
         const d = new Date()
@@ -192,6 +249,20 @@ const Todo = () => {
         setSortBy('task')
     }
 
+    const toggleSortLocation = () => {
+        if(sortOrder === 'asc')
+        {
+            setSortOrder('desc')
+            data.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
+        }
+        else if(sortOrder === 'desc')
+        {
+            setSortOrder('asc')
+            data.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
+        }
+        setSortBy('location')
+    }
+
     const toggleSortPriority = () => {
         if(sortOrder === 'asc')
         {
@@ -264,15 +335,34 @@ const Todo = () => {
         setPriority(data[index].priority)
     }
 
-    const handleSubmit = () => {
-        const temp = dueDate.split('-').reverse().join('-')
-        const newTask = {taskName, createdAt: today, dueDate: temp, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false}
+    console.log('data', data);
+
+    const handleAddtask = () => {
+        const tempDate = dueDate.split('-').reverse().join('-')
+        const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, location}
         setData([...data, newTask])
     }
 
-    console.log('today', today);
+    const handleEditTask = () => {
+        const tempDate = newDueDate ? newDueDate.split('-').reverse().join('-') : dueDate
+        const newData = data
+        newData[editIndex].taskName = taskName
+        newData[editIndex].dueDate = tempDate
+        newData[editIndex].priority = priority
+        newData[editIndex].priorityNum = priorityNum
+        newData[editIndex].modifiedDate = today
+        console.log('tempDate', tempDate);
+        console.log('new Data', newData);
+        // const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false}
+        setData([...data, newData])
+    }
+
+    // console.log('today', today);
     // console.log('task', taskName);
-    console.log('due date', dueDate);
+    // console.log('due date', dueDate);
+    // console.log('new due date', newDueDate);
+    // console.log('priority', priority);
+    // console.log('priority num', priorityNum);
 
     return(
         <div className="todo">
@@ -288,8 +378,10 @@ const Todo = () => {
                     <p className={sortBy === 'due' ? 'active' : ''} onClick={toggleSortDue}>DUE DATE {sortBy === 'due' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
                     <p className={sortBy === 'modified' ? 'active' : ''} onClick={toggleSortModified}>MODIFIED DATE {sortBy === 'modified' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
                     <p className={sortBy === 'priority' ? 'active' : ''} onClick={toggleSortPriority}>PRIORITY {sortBy === 'priority' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
+                    <p className={sortBy === 'location' ? 'active' : ''} onClick={toggleSortLocation}>Location {sortBy === 'location' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
                     <p>MARK AS DONE</p>
                     <p>REORDER TASK</p>
+                    <p>ACTIONS</p>
                 </div>
                 {data.map((item, index) => {
                     return(
@@ -297,14 +389,15 @@ const Todo = () => {
                             <p>{index+1}</p>
                             <input type="text" disabled={renameIndex === index ? false : true} value={item.taskName} onChange={(e) => editTaskName(e, index)} />
                             <button onClick={() => setRenameIndex(renameIndex === -1 ? index : -1)}>{renameIndex === index ? 'done' : 'edit'}</button>
-                            <button onClick={() => handleEditIndex(index)}> EDIT</button>
-                            {/* <p>{item.taskName}</p> */}
                             <p>{item.createdAt}</p>
                             <p className={item.isLate === true ? 'late' : ''}>{item.dueDate}</p>
                             <p>{item.modifiedDate}</p>
                             <p>{item.priority}</p>
+                            <p>{item.location}</p>
                             <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
                             <p><button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}>UP</button> <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}>DOWN</button></p>
+                            <button onClick={() => handleEditIndex(index)}> EDIT</button>
+                            <button>DELETE</button>
                         </div>
                     )
                 })}
@@ -321,20 +414,20 @@ const Todo = () => {
                     <option value="Medium">Medium</option>
                     <option value="High">High</option>
                 </select>
-                <button onClick={handleSubmit} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
+                <button onClick={handleAddtask} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
             </div>
             <div>
                 <h1>EDIT TASK</h1>
                 <input type="text" placeholder='Task Name' value={taskName && taskName} onChange={(e) => setTaskName(e.target.value)} />
                 <br />
-                <input type="date" min={today.split('-').reverse().join('-')} value={dueDate && dueDate} onChange={(e) => {setDueDate(e.target.value); console.log('123', e.target.value);}} />
+                <input type="date" min={today.split('-').reverse().join('-')} value={newDueDate ? newDueDate : dueDate.split('-').reverse().join('-')} onChange={(e) => setNewDueDate(e.target.value)} />
                 <br />
                 <select onChange={(e) => handlePriority(e)}>
                     <option value="Low" selected={editIndex !== -1 && data[editIndex].priority === 'Low' ? true : false}>Low</option>
                     <option value="Medium" selected={editIndex !== -1 && data[editIndex].priority === 'Medium' ? true : false}>Medium</option>
                     <option value="High" selected={editIndex !== -1 && data[editIndex].priority === 'High' ? true : false}>High</option>
                 </select>
-                <button onClick={handleSubmit} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
+                <button onClick={handleEditTask} disabled={(taskName && dueDate && priority) ? false : true} >EDIT TASK</button>
             </div>
         </div>
     )
@@ -344,3 +437,5 @@ export default Todo
 
 
 // make sort 1 func
+// design checkbox
+// good icon for sort
