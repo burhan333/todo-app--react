@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Logo from '../../assets/images/logo.png'
 
 const Todo = () => {
@@ -16,12 +16,20 @@ const Todo = () => {
     const [renameIndex, setRenameIndex] = useState(-1)
     const [editIndex, setEditIndex] = useState(-1)
     const [location, setLocation] = useState('')
+    const [searchList, setSearchList] = useState([])
+    const [updatedSearchList, setUpdatedSearchList] = useState([])
+    const [search, setSearch] = useState('')
+    const [showSearchList, setShowSearchList] = useState(false)
     const [lat, setLat] = useState(0)
     const [long, setLong] = useState(0)
+    const [searchedData, setSearchedData] = useState([])
+    const [isFiltered, setIsFiltered] = useState(false)
+    const componentRef = useRef()
     const API_KEY = process.env.REACT_APP_API_KEY
 
     const [data, setData] = useState([
         {
+            id: 1,
             taskName: 'Study in canada',
             createdAt: '06-01-2019',
             dueDate: '05-06-2022',
@@ -33,6 +41,7 @@ const Todo = () => {
             isLate: false,
         },
         {
+            id: 2,
             taskName: 'Development',
             createdAt: '29-09-2020',
             dueDate: '05-06-2022',
@@ -44,6 +53,7 @@ const Todo = () => {
             isLate: false,
         },
         {
+            id: 3,
             taskName: 'Go the park',
             createdAt: '02-04-2022',
             dueDate: '03-06-2021',
@@ -55,6 +65,7 @@ const Todo = () => {
             isLate: false,
         },
         {
+            id: 4,
             taskName: 'Deployment on friday',
             createdAt: '25-01-2021',
             dueDate: '15-05-2022',
@@ -66,6 +77,7 @@ const Todo = () => {
             isLate: false,
         },
         {
+            id: 5,
             taskName: 'Deployment',
             createdAt: '03-06-2022',
             dueDate: '25-12-2018',
@@ -78,11 +90,23 @@ const Todo = () => {
         },
     ])
 
-    console.log('API_KEY', process.env.REACT_APP_API_KEY);
+    useEffect(() => {
+        document.addEventListener("click", handleClick);
+        return () => document.removeEventListener("click", handleClick);
+        function handleClick(e) {
+            if(componentRef && componentRef.current){
+                const ref = componentRef.current
+                if(!ref.contains(e.target)){
+                    setShowSearchList(false)
+                }
+            }
+        }
+    }, []);
 
     useEffect(() => {
         getDate()
         getLatLong()
+        setSearchedData(data)
     }, [])
     
     useEffect(() => {
@@ -90,7 +114,7 @@ const Todo = () => {
     }, [today])
 
     useEffect(() => {
-        getLocation()
+        // getLocation()
     }, [lat, long])
 
     const handleDueDate = () => {
@@ -118,8 +142,6 @@ const Todo = () => {
         setData(array)
     }
 
-    // console.log('data', data);
-
     const getLocation = () => {
         if (lat && long)
         {
@@ -141,7 +163,6 @@ const Todo = () => {
                     }
                     if(city) break
                 }
-                console.log('city', city);
                 setLocation(city)
             })
         }
@@ -153,9 +174,6 @@ const Todo = () => {
             setLong(e.coords.longitude);
         })
     }
-
-    console.log('location', location);
-    console.log('lat', lat);
 
     const getDate = () => {
         const d = new Date()
@@ -176,125 +194,269 @@ const Todo = () => {
     }
 
     const toggleSortCreated = () => {
-        data.sort(function (a, b) {
-            if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                const item1 = a.createdAt.split('-'),
-                    item2 = b.createdAt.split('-');
-                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                const item2 = a.createdAt.split('-'),
-                    item1 = b.createdAt.split('-');
-                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-            }
-        });
-        setSortBy('created')
+        if (isFiltered)
+        {
+            searchedData.sort(function (a, b) {
+                if(sortOrder === 'asc')
+                {
+                    setSortOrder('desc')
+                    const item1 = a.createdAt.split('-'),
+                        item2 = b.createdAt.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+                else if(sortOrder === 'desc')
+                {
+                    setSortOrder('asc')
+                    const item2 = a.createdAt.split('-'),
+                        item1 = b.createdAt.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+            });
+            setSortBy('created')
+        }
+        else
+        {
+            data.sort(function (a, b) {
+                if(sortOrder === 'asc')
+                {
+                    setSortOrder('desc')
+                    const item1 = a.createdAt.split('-'),
+                        item2 = b.createdAt.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+                else if(sortOrder === 'desc')
+                {
+                    setSortOrder('asc')
+                    const item2 = a.createdAt.split('-'),
+                        item1 = b.createdAt.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+            });
+            setSortBy('created')
+        }
     }
 
     const toggleSortDue = () => {
-        data.sort(function (a, b) {
-            if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                const item1 = a.dueDate.split('-'),
-                    item2 = b.dueDate.split('-');
-                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                const item2 = a.dueDate.split('-'),
-                    item1 = b.dueDate.split('-');
-                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-            }
-        });
-        setSortBy('due')
+        if (isFiltered)
+        {
+            searchedData.sort(function (a, b) {
+                if(sortOrder === 'asc')
+                {
+                    setSortOrder('desc')
+                    const item1 = a.dueDate.split('-'),
+                        item2 = b.dueDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+                else if(sortOrder === 'desc')
+                {
+                    setSortOrder('asc')
+                    const item2 = a.dueDate.split('-'),
+                        item1 = b.dueDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+            });
+            setSortBy('due')
+        }
+        else
+        {
+            data.sort(function (a, b) {
+                if(sortOrder === 'asc')
+                {
+                    setSortOrder('desc')
+                    const item1 = a.dueDate.split('-'),
+                        item2 = b.dueDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+                else if(sortOrder === 'desc')
+                {
+                    setSortOrder('asc')
+                    const item2 = a.dueDate.split('-'),
+                        item1 = b.dueDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+            });
+            setSortBy('due')
+        }
     }
 
     const toggleSortModified = () => {
-        data.sort(function (a, b) {
+        if (isFiltered)
+        {
+            searchedData.sort(function (a, b) {
+                if(sortOrder === 'asc')
+                {
+                    setSortOrder('desc')
+                    const item1 = a.modifiedDate.split('-'),
+                        item2 = b.modifiedDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+                else if(sortOrder === 'desc')
+                {
+                    setSortOrder('asc')
+                    const item2 = a.modifiedDate.split('-'),
+                        item1 = b.modifiedDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+            });
+            setSortBy('modified')
+        }
+        else
+        {
+            data.sort(function (a, b) {
+                if(sortOrder === 'asc')
+                {
+                    setSortOrder('desc')
+                    const item1 = a.modifiedDate.split('-'),
+                        item2 = b.modifiedDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+                else if(sortOrder === 'desc')
+                {
+                    setSortOrder('asc')
+                    const item2 = a.modifiedDate.split('-'),
+                        item1 = b.modifiedDate.split('-');
+                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                }
+            });
+            setSortBy('modified')
+        }
+    }
+
+    const toggleSortTask = () => {
+        if (isFiltered)
+        {
             if(sortOrder === 'asc')
             {
                 setSortOrder('desc')
-                const item1 = a.modifiedDate.split('-'),
-                    item2 = b.modifiedDate.split('-');
-                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                searchedData.sort((a,b) => (a.taskName > b.taskName) ? 1 : ((b.taskName > a.taskName) ? -1 : 0))
             }
             else if(sortOrder === 'desc')
             {
                 setSortOrder('asc')
-                const item2 = a.modifiedDate.split('-'),
-                    item1 = b.modifiedDate.split('-');
-                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+                searchedData.sort((a,b) => (a.taskName < b.taskName) ? 1 : ((b.taskName < a.taskName) ? -1 : 0))
             }
-        });
-        setSortBy('modified')
-    }
-
-    const toggleSortTask = () => {
-        if(sortOrder === 'asc')
-        {
-            setSortOrder('desc')
-            data.sort((a,b) => (a.taskName > b.taskName) ? 1 : ((b.taskName > a.taskName) ? -1 : 0))
+            setSortBy('task')
         }
-        else if(sortOrder === 'desc')
+        else
         {
-            setSortOrder('asc')
-            data.sort((a,b) => (a.taskName < b.taskName) ? 1 : ((b.taskName < a.taskName) ? -1 : 0))
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                data.sort((a,b) => (a.taskName > b.taskName) ? 1 : ((b.taskName > a.taskName) ? -1 : 0))
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                data.sort((a,b) => (a.taskName < b.taskName) ? 1 : ((b.taskName < a.taskName) ? -1 : 0))
+            }
+            setSortBy('task')
         }
-        setSortBy('task')
     }
 
     const toggleSortLocation = () => {
-        if(sortOrder === 'asc')
+        if (isFiltered)
         {
-            setSortOrder('desc')
-            data.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                searchedData.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                searchedData.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
+            }
+            setSortBy('location')
         }
-        else if(sortOrder === 'desc')
+        else
         {
-            setSortOrder('asc')
-            data.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                data.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                data.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
+            }
+            setSortBy('location')
         }
-        setSortBy('location')
     }
 
     const toggleSortPriority = () => {
-        if(sortOrder === 'asc')
+        if (isFiltered)
         {
-            setSortOrder('desc')
-            data.sort((a,b) => a.priorityNum - b.priorityNum)
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                searchedData.sort((a,b) => a.priorityNum - b.priorityNum)
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                searchedData.sort((a,b) => b.priorityNum - a.priorityNum)
+            }
+            setSortBy('priority')
         }
-        else if(sortOrder === 'desc')
+        else
         {
-            setSortOrder('asc')
-            data.sort((a,b) => b.priorityNum - a.priorityNum)
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                data.sort((a,b) => a.priorityNum - b.priorityNum)
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                data.sort((a,b) => b.priorityNum - a.priorityNum)
+            }
+            setSortBy('priority')
         }
-        setSortBy('priority')
     }
 
     const handleOrder = (value, index) => {
-        if (value === 'up')
+        if (isFiltered)
         {
-            const tempData = data
-            let a = tempData[index-1]
-            let b = tempData[index]
-            tempData[index-1] = b
-            tempData[index] = a
-            setData([...tempData])
+            if (value === 'up')
+            {
+                const tempData = searchedData
+                let a = tempData[index-1]
+                let b = tempData[index]
+                tempData[index-1] = b
+                tempData[index] = a
+                setSearchedData([...tempData])
+            }
+            else if (value === 'down')
+            {
+                const tempData = searchedData
+                let a = tempData[index]
+                let b = tempData[index+1]
+                tempData[index] = b
+                tempData[index+1] = a
+                setSearchedData([...tempData])
+            }
         }
-        else if (value === 'down')
+        else
         {
-            const tempData = data
-            let a = tempData[index]
-            let b = tempData[index+1]
-            tempData[index] = b
-            tempData[index+1] = a
-            setData([...tempData])
+            if (value === 'up')
+            {
+                const tempData = data
+                let a = tempData[index-1]
+                let b = tempData[index]
+                tempData[index-1] = b
+                tempData[index] = a
+                setData([...tempData])
+            }
+            else if (value === 'down')
+            {
+                const tempData = data
+                let a = tempData[index]
+                let b = tempData[index+1]
+                tempData[index] = b
+                tempData[index+1] = a
+                setData([...tempData])
+            }
         }
     }
 
@@ -302,6 +464,7 @@ const Todo = () => {
         const tempData = data
         tempData[index].isDone === true ? tempData[index].isDone = false : tempData[index].isDone = true
         setData([...tempData])
+        setSearchedData([...tempData])
     }
 
     const handlePriority = (e) => {
@@ -326,6 +489,7 @@ const Todo = () => {
         const newData = data
         newData[index].taskName = newTaskName
         setData([...newData])
+        setSearchedData([...newData])
     }
 
     const handleEditIndex = (index) => {
@@ -335,12 +499,12 @@ const Todo = () => {
         setPriority(data[index].priority)
     }
 
-    console.log('data', data);
-
     const handleAddtask = () => {
+        const id = data.length+1
         const tempDate = dueDate.split('-').reverse().join('-')
-        const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, location}
+        const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, location, id}
         setData([...data, newTask])
+        setSearchedData([...data, newTask])
     }
 
     const handleEditTask = () => {
@@ -351,18 +515,46 @@ const Todo = () => {
         newData[editIndex].priority = priority
         newData[editIndex].priorityNum = priorityNum
         newData[editIndex].modifiedDate = today
-        console.log('tempDate', tempDate);
-        console.log('new Data', newData);
-        // const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false}
         setData([...data, newData])
+        setSearchedData([...data, newData])
     }
 
-    // console.log('today', today);
-    // console.log('task', taskName);
-    // console.log('due date', dueDate);
-    // console.log('new due date', newDueDate);
-    // console.log('priority', priority);
-    // console.log('priority num', priorityNum);
+    const handleDelete = (id) => {
+        const tempData = data.filter((item, index) => item.id !== id )
+        setData(tempData)
+        setSearchedData(tempData)
+    }
+
+    const handleSearchResult = () => {
+        const alreadyExist = searchList.some(e => e === search)
+        if (!alreadyExist && search)
+        {
+            setSearchList([...searchList, search])
+        }
+
+        const newData = search ? data.filter(item => item.taskName.toLowerCase().includes(search.toLowerCase())) : data
+        setSearchedData(newData)
+        setIsFiltered(search ? true : false)
+    }
+
+    const handleSearch = (e) => {
+        const input = e.target.value
+        setSearch(input)
+        const newList = input ? searchList.filter(item => item.toLowerCase().includes(input.toLowerCase())) : searchList
+        setUpdatedSearchList(newList)
+    }
+
+    const handleKey = (e) => {
+        if (e.key === 'Enter')
+        {
+            handleSearchResult()
+        }
+    }
+
+    const clearSearch = () => {
+        setSearchList([])
+        setUpdatedSearchList([])
+    }
 
     return(
         <div className="todo">
@@ -371,6 +563,19 @@ const Todo = () => {
                 <a href="#">Logout</a>
             </div>
             <div className="todo_body">
+                <div className="todo_search" ref={componentRef}>
+                    <input type="search" placeholder='Search Task' value={search} onKeyDown={(e) => handleKey(e)} onChange={(e) => handleSearch(e)} onFocus={() => setShowSearchList(true)} />
+                    <button onClick={handleSearchResult}>Search</button>
+                    {updatedSearchList.length > 0 && showSearchList && <div className="todo_list">
+                        <p>Recent Searches</p>
+                        {updatedSearchList.map((item, index) => {
+                            return(
+                                <p className='todo_savedText' key={index} onClick={() => setSearch(item)}>{item}</p>
+                            )
+                        })}
+                        <p className='todo_clear' onClick={clearSearch}>Clear Recent Searches</p>
+                    </div>}
+                </div>
                 <div className="todo_head">
                     <p>S.NO</p>
                     <p className={sortBy === 'task' ? 'active' : ''} onClick={toggleSortTask}>TASK NAME {sortBy === 'task' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
@@ -383,7 +588,7 @@ const Todo = () => {
                     <p>REORDER TASK</p>
                     <p>ACTIONS</p>
                 </div>
-                {data.map((item, index) => {
+                {searchedData.map((item, index) => {
                     return(
                         <div className="todo_task" key={index}>
                             <p>{index+1}</p>
@@ -397,7 +602,7 @@ const Todo = () => {
                             <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
                             <p><button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}>UP</button> <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}>DOWN</button></p>
                             <button onClick={() => handleEditIndex(index)}> EDIT</button>
-                            <button>DELETE</button>
+                            <button onClick={() => handleDelete(item.id)}>DELETE</button>
                         </div>
                     )
                 })}
