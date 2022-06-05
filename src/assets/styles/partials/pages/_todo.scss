@@ -69,6 +69,21 @@
         z-index: 1;
     }
 
+    &_head
+    {
+        width: 1200px;
+    }
+
+    &_taskMain
+    {
+        width: 1200px;
+    }
+
+    &_btns
+    {
+        width: 1200px;
+    }
+
     &_listInner
     {
         max-height: 120px;
@@ -191,7 +206,6 @@
     &_task
     {
         display: flex;
-        // justify-content: space-between;
         align-items: center;
         padding: 10px;
 
@@ -330,5 +344,39 @@
         font-size: 18px;
         font-weight: 600;
         color: $primary;
+    }
+}
+
+@media (max-width: 1199px)
+{
+    .todo
+    {
+        &_body
+        {
+            width: 991px;
+            overflow: auto;
+        }
+    }
+}
+
+@media (max-width: 992px)
+{
+    .todo
+    {
+        &_body
+        {
+            width: 400px;
+        }
+    }
+}
+
+@media (max-width: 375px)
+{
+    .todo
+    {
+        &_body
+        {
+            width: 360px;
+        }
     }
 }
