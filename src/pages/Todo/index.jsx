@@ -1,4 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
+import ArrUp1 from '../../assets/images/arrow-up1.png'
+import ArrUp2 from '../../assets/images/arrow-up2.png'
+import ArrDown1 from '../../assets/images/arrow-down1.png'
+import ArrDown2 from '../../assets/images/arrow-down2.png'
+import IconClose from '../../assets/images/close.png'
 import Logo from '../../assets/images/logo.png'
 
 const Todo = () => {
@@ -23,6 +28,9 @@ const Todo = () => {
     const [lat, setLat] = useState(0)
     const [long, setLong] = useState(0)
     const [searchedData, setSearchedData] = useState([])
+    const [add, setAdd] = useState(false)
+    const [ids, setIds] = useState([])
+    const [deleteAll, setDeleteAll] = useState(false)
     // const [editId, setEditId] = useState(0)
     // const [isFiltered, setIsFiltered] = useState(false)
     const savedData = localStorage.getItem('data')
@@ -109,33 +117,23 @@ const Todo = () => {
         getDate()
         getLatLong()
     }, [])
-
-    console.log('data', data);
-    console.log('search data', searchedData);
     
     useEffect(() => {
         getInitialData()
     }, [today])
 
     useEffect(() => {
-        // const temp = JSON.stringify(data)
-        // localStorage.setItem('data', JSON.stringify(data))
-    }, [data])
-
-    useEffect(() => {
-        getLocation()
+        // getLocation()
     }, [lat, long])
 
     const getInitialData = () => {
         if (savedData)
         {
-            console.log('run1');
             const tempData = JSON.parse(savedData)
             if (tempData.length > 0)
             {
-                console.log('run2');
-                console.log('temp lenght', tempData.length, typeof(tempData));
                 const array = []
+                const array2 = []
                 tempData.forEach((item, index) => {
                     let obj = {...tempData[index]}
                     const tempToday = today.split('-')
@@ -155,12 +153,16 @@ const Todo = () => {
                     }
     
                     array.push(obj)
+                    array2.push(item.id)
                 })
                 setData(array)
                 setSearchedData(array)
+                setIds(array2)
             }
         }
     }
+
+    console.log('ids', ids);
 
     const getLocation = () => {
         if (lat && long)
@@ -302,7 +304,6 @@ const Todo = () => {
     }
 
     const toggleSortPriority = () => {
-        console.log('run');
         if(sortOrder === 'asc')
         {
             setSortOrder('desc')
@@ -342,7 +343,7 @@ const Todo = () => {
         tempData[index].isDone === true ? tempData[index].isDone = false : tempData[index].isDone = true
         setData([...tempData])
         setSearchedData([...tempData])
-        localStorage.setItem('data', JSON.stringify([...data, tempData]))
+        localStorage.setItem('data', JSON.stringify([...tempData]))
     }
 
     const handlePriority = (e) => {
@@ -371,20 +372,28 @@ const Todo = () => {
         localStorage.setItem('data', JSON.stringify([...newData]))
     }
 
-    const handleEditIndex = (index) => {
-        setEditIndex(index-1)
-        setTaskName(data[index-1].taskName)
-        setDueDate(data[index-1].dueDate)
-        setPriority(data[index-1].priority)
+    const handleEditIndex = (param) => {
+        console.log('param', param);
+        var index = data.findIndex(item => item.id === param);
+        console.log('index inner', index);
+        setEditIndex(index)
+        setTaskName(data[index].taskName)
+        setDueDate(data[index].dueDate)
+        setPriority(data[index].priority)
     }
 
+    // console.log('data', data);
+
+    // console.log('edit Index', editIndex);
+
     const handleAddtask = () => {
-        const id = data.length+1
+        const id = ids.length+1
         const tempDate = dueDate.split('-').reverse().join('-')
         const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, location, id}
         setData([...data, newTask])
         setSearchedData([...data, newTask])
         localStorage.setItem('data', JSON.stringify([...data, newTask]))
+        setIds([...ids, id])
     }
 
     const handleEditTask = () => {
@@ -473,64 +482,95 @@ const Todo = () => {
                 </div>
                 <div className="todo_head">
                     <p>S.NO</p>
-                    <p className={sortBy === 'task' ? 'active' : ''} onClick={toggleSortTask}>TASK NAME {sortBy === 'task' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
-                    <p className={sortBy === 'created' ? 'active' : ''} onClick={toggleSortCreated}>CREATED AT {sortBy === 'created' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
-                    <p className={sortBy === 'due' ? 'active' : ''} onClick={toggleSortDue}>DUE DATE {sortBy === 'due' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
-                    <p className={sortBy === 'modified' ? 'active' : ''} onClick={toggleSortModified}>MODIFIED DATE {sortBy === 'modified' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
-                    <p className={sortBy === 'priority' ? 'active' : ''} onClick={toggleSortPriority}>PRIORITY {sortBy === 'priority' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
-                    <p className={sortBy === 'location' ? 'active' : ''} onClick={toggleSortLocation}>Location {sortBy === 'location' && (sortOrder ==='asc' ? <span>&#8657;</span> : <span>&#8659;</span>)}</p>
+                    <p className={sortBy === 'task' ? 'active' : ''} onClick={toggleSortTask}>TASK NAME {sortBy === 'task' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
+                    <p className={sortBy === 'created' ? 'active' : ''} onClick={toggleSortCreated}>CREATED AT {sortBy === 'created' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
+                    <p className={sortBy === 'due' ? 'active' : ''} onClick={toggleSortDue}>DUE DATE {sortBy === 'due' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
+                    <p className={sortBy === 'modified' ? 'active' : ''} onClick={toggleSortModified}>MODIFIED DATE {sortBy === 'modified' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
+                    <p className={sortBy === 'priority' ? 'active' : ''} onClick={toggleSortPriority}>PRIORITY {sortBy === 'priority' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
+                    <p className={sortBy === 'location' ? 'active' : ''} onClick={toggleSortLocation}>Location {sortBy === 'location' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
                     <p>MARK AS DONE</p>
                     <p>REORDER TASK</p>
                     <p>ACTIONS</p>
                 </div>
-                {searchedData.map((item, index) => {
-                    return(
-                        <div className="todo_task" key={index}>
-                            <p>{index+1}</p>
-                            <input type="text" disabled={renameIndex === index ? false : true} value={item.taskName} onChange={(e) => editTaskName(e, index)} />
-                            <button onClick={() => setRenameIndex(renameIndex === -1 ? index : -1)}>{renameIndex === index ? 'done' : 'edit'}</button>
-                            <p>{item.createdAt}</p>
-                            <p className={item.isLate === true ? 'late' : ''}>{item.dueDate}</p>
-                            <p>{item.modifiedDate}</p>
-                            <p>{item.priority}</p>
-                            <p>{item.location}</p>
-                            <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
-                            <p><button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}>UP</button> <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}>DOWN</button></p>
-                            <button onClick={() => {handleEditIndex(item.id)}}> EDIT</button>
-                            <button onClick={() => handleDelete(item.id)}>DELETE</button>
-                        </div>
-                    )
-                })}
-                {data.length == 0 && <p>Currently there is no task, add a task to view</p>}
-                {data.length > 0 && searchedData.length === 0 && <p>Can not find any task with this name search another task name</p>}
+                <div className="todo_taskMain">
+                    {searchedData.map((item, index) => {
+                        return(
+                            <div className="todo_task" key={index}>
+                                <p>{index+1}</p>
+                                <div className="todo_name">
+                                    <input type="text" disabled={renameIndex === index ? false : true} value={item.taskName} onChange={(e) => editTaskName(e, index)} />
+                                    <button onClick={() => setRenameIndex(renameIndex === -1 ? index : -1)}>{renameIndex === index ? 'done' : 'edit'}</button>
+                                </div>
+                                <p>{item.createdAt}</p>
+                                <p className={item.isLate === true ? 'todo_late' : ''}>{item.dueDate}</p>
+                                <p>{item.modifiedDate}</p>
+                                <p>{item.priority}</p>
+                                <p>{item.location}</p>
+                                <div className="todo_check">
+                                    <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
+                                </div>
+                                <div className='todo_updown'><button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}><img src={ArrUp1} /> </button> <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}><img src={ArrDown1} /></button></div>
+                                <div className="todo_actio">
+                                    <button className='todo_edit' onClick={() => {handleEditIndex(item.id)}}> EDIT</button>
+                                    <button className='todo_delete' onClick={() => handleDelete(item.id)}>DELETE</button>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+                {data.length == 0 && <p className='todo_err'>Currently there is no task, add a task to view</p>}
+                {data.length > 0 && searchedData.length === 0 && <p className='todo_err'>Can not find any task with this name search another task name</p>}
+                <div className="todo_btns">
+                    <button onClick={() => setDeleteAll(true)} >DELETE ALL</button>
+                    <button onClick={() => setAdd(true)}>ADD TASK</button>
+                </div>
             </div>
-            <button onClick={handleDeleteAll}>DELETE ALL</button>
-            <div>
-                <h1>ADD TASK</h1>
-                <input type="text" placeholder='Task Name' onChange={(e) => setTaskName(e.target.value)} />
-                <br />
-                <input type="date" min={today.split('-').reverse().join('-')} onChange={(e) => setDueDate(e.target.value)} />
-                <br />
-                <select onChange={(e) => handlePriority(e)} defaultValue={'DEFAULT'}>
-                    <option value="DEFAULT" disabled>SELECT PRIORITY</option>
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                </select>
-                <button onClick={handleAddtask} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
+
+            <div className={add ? 'add add_active' : 'add'}>
+                <div className="add_inner">
+                    <p className="add_title">ADD TASK</p>
+                    <label>Task Name</label>
+                    {add && <div>
+                        <input type="text" placeholder='Task Name' onChange={(e) => setTaskName(e.target.value)} />
+                        <label>Due Date</label>
+                        <input type="date" min={today.split('-').reverse().join('-')} onChange={(e) => setDueDate(e.target.value)} />
+                        <label>Priority</label>
+                        <select onChange={(e) => handlePriority(e)} defaultValue={'DEFAULT'}>
+                            <option value="DEFAULT" disabled>SELECT PRIORITY</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>}
+                    <button className='add_btn' onClick={handleAddtask} disabled={(taskName && dueDate && priority) ? false : true} >ADD</button>
+                    <img src={IconClose} alt="" className='add_close' onClick={() => setAdd(false)} />
+                </div>
             </div>
-            <div>
-                <h1>EDIT TASK</h1>
-                <input type="text" placeholder='Task Name' value={taskName && taskName} onChange={(e) => setTaskName(e.target.value)} />
-                <br />
-                <input type="date" min={today.split('-').reverse().join('-')} value={newDueDate ? newDueDate : dueDate.split('-').reverse().join('-')} onChange={(e) => setNewDueDate(e.target.value)} />
-                <br />
-                <select onChange={(e) => handlePriority(e)}>
-                    <option value="Low" selected={editIndex !== -1 && data[editIndex].priority === 'Low' ? true : false}>Low</option>
-                    <option value="Medium" selected={editIndex !== -1 && data[editIndex].priority === 'Medium' ? true : false}>Medium</option>
-                    <option value="High" selected={editIndex !== -1 && data[editIndex].priority === 'High' ? true : false}>High</option>
-                </select>
-                <button onClick={handleEditTask} disabled={(taskName && dueDate && priority) ? false : true} >EDIT TASK</button>
+
+            <div className={editIndex !== -1 ? 'add add_active' : 'add'}>
+                <div className="add_inner">
+                    <p className="add_title">EDIT TASK</p>
+                    <label>Task Name</label>
+                    <input type="text" placeholder='Task Name' value={taskName && taskName} onChange={(e) => setTaskName(e.target.value)} />
+                    <label>Due Date</label>
+                    <input type="date" min={today.split('-').reverse().join('-')} value={newDueDate ? newDueDate : dueDate.split('-').reverse().join('-')} onChange={(e) => setNewDueDate(e.target.value)} />
+                    <label>Priority</label>
+                    <select onChange={(e) => handlePriority(e)}>
+                        <option value="Low" selected={editIndex !== -1 && data[editIndex].priority === 'Low' ? true : false}>Low</option>
+                        <option value="Medium" selected={editIndex !== -1 && data[editIndex].priority === 'Medium' ? true : false}>Medium</option>
+                        <option value="High" selected={editIndex !== -1 && data[editIndex].priority === 'High' ? true : false}>High</option>
+                    </select>
+                    <button className='add_btn' onClick={handleEditTask} disabled={(taskName && dueDate && priority) ? false : true} >EDIT TASK</button>
+                    <img src={IconClose} alt="" className='add_close' onClick={() => setEditIndex(-1)} />
+                </div>
+            </div>
+
+            <div className={deleteAll ? 'add add_active' : 'add'}>
+                <div className="add_inner">
+                    <p className="add_title">Are you sure you want to delete all task</p>
+                        <button className='add_btn' onClick={handleDeleteAll}>DELETE</button>
+                        <button className='add_btn' onClick={() => setDeleteAll(false)}>CANCEL</button>
+                </div>
             </div>
         </div>
     )
@@ -542,3 +582,4 @@ export default Todo
 // make sort 1 func
 // design checkbox
 // good icon for sort
+// toss notifications
