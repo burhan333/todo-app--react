@@ -1,0 +1,61 @@
+.todo
+{
+    &_top
+    {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+
+        a
+        {
+            text-decoration: none;
+            font-weight: 600;
+            color: black;
+        }
+
+        a:hover
+        {
+            color: $primary;
+        }
+    }
+
+    &_logo
+    {
+        width: 180px;
+    }
+
+    &_body
+    {
+        width: 1200px;
+        background-color: white;
+        margin: auto;
+    }
+
+    &_head
+    {
+        display: flex;
+        justify-content: space-between;
+
+        p
+        {
+            width: 150px;
+        }
+    }
+
+    &_task
+    {
+        display: flex;
+        justify-content: space-between;
+
+        p
+        {
+            width: 150px;
+        }
+
+        input
+        {
+            width: 150px;
+        }
+    }
+}

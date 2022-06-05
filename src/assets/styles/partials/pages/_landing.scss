@@ -1,0 +1,30 @@
+.landing
+{
+    width: 100%;
+    min-height: calc(100vh - 50px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    &_btn
+    {
+        background-color: $primary;
+        border: none;
+        border-radius: 50px;
+        color: #fff;
+        padding: 20px 50px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 50px;
+        transition: 0.3s ease-in-out;
+        font-weight: 500;;
+    }
+
+    &_btn:hover
+    {
+        background-color: $secondary;
+        transition: 0.5s ease-in-out;
+        color: white;
+    }
+}
