@@ -24,71 +24,72 @@ const Todo = () => {
     const [long, setLong] = useState(0)
     const [searchedData, setSearchedData] = useState([])
     const [isFiltered, setIsFiltered] = useState(false)
+    const savedData = localStorage.getItem('data')
     const componentRef = useRef()
     const API_KEY = process.env.REACT_APP_API_KEY
-
-    const [data, setData] = useState([
-        {
-            id: 1,
-            taskName: 'Study in canada',
-            createdAt: '06-01-2019',
-            dueDate: '05-06-2022',
-            modifiedDate: '07-01-2019',
-            priority: 'Low',
-            location: 'Karachi',
-            priorityNum: 1,
-            isDone: true,
-            isLate: false,
-        },
-        {
-            id: 2,
-            taskName: 'Development',
-            createdAt: '29-09-2020',
-            dueDate: '05-06-2022',
-            modifiedDate: '02-10-2020',
-            priority: 'Medium',
-            location: 'Lahore',
-            priorityNum: 2,
-            isDone: false,
-            isLate: false,
-        },
-        {
-            id: 3,
-            taskName: 'Go the park',
-            createdAt: '02-04-2022',
-            dueDate: '03-06-2021',
-            modifiedDate: '04-04-2022',
-            priority: 'High',
-            location: 'Islamabad',
-            priorityNum: 3,
-            isDone: false,
-            isLate: false,
-        },
-        {
-            id: 4,
-            taskName: 'Deployment on friday',
-            createdAt: '25-01-2021',
-            dueDate: '15-05-2022',
-            modifiedDate: '05-02-2021',
-            priority: 'High',
-            location: 'Karachi',
-            priorityNum: 3,
-            isDone: true,
-            isLate: false,
-        },
-        {
-            id: 5,
-            taskName: 'Deployment',
-            createdAt: '03-06-2022',
-            dueDate: '25-12-2018',
-            modifiedDate: '19-12-2018',
-            priority: 'High',
-            location: 'Karachi',
-            priorityNum: 3,
-            isDone: true,
-            isLate: false,
-        },
-    ])
+    const [data, setData] = useState([])
+    // const [data, setData] = useState([
+        // {
+        //     id: 1,
+        //     taskName: 'Study in canada',
+        //     createdAt: '06-01-2019',
+        //     dueDate: '03-06-2022',
+        //     modifiedDate: '07-01-2019',
+        //     priority: 'Low',
+        //     location: 'Karachi',
+        //     priorityNum: 1,
+        //     isDone: true,
+        //     isLate: false,
+        // },
+        // {
+        //     id: 2,
+        //     taskName: 'Development',
+        //     createdAt: '29-09-2020',
+        //     dueDate: '05-06-2022',
+        //     modifiedDate: '02-10-2020',
+        //     priority: 'Medium',
+        //     location: 'Lahore',
+        //     priorityNum: 2,
+        //     isDone: false,
+        //     isLate: false,
+        // },
+        // {
+        //     id: 3,
+        //     taskName: 'Go the park',
+        //     createdAt: '02-04-2022',
+        //     dueDate: '03-06-2021',
+        //     modifiedDate: '04-04-2022',
+        //     priority: 'High',
+        //     location: 'Islamabad',
+        //     priorityNum: 3,
+        //     isDone: false,
+        //     isLate: false,
+        // },
+        // {
+        //     id: 4,
+        //     taskName: 'Deployment on friday',
+        //     createdAt: '25-01-2021',
+        //     dueDate: '15-05-2022',
+        //     modifiedDate: '05-02-2021',
+        //     priority: 'High',
+        //     location: 'Karachi',
+        //     priorityNum: 3,
+        //     isDone: true,
+        //     isLate: false,
+        // },
+        // {
+        //     id: 5,
+        //     taskName: 'Deployment',
+        //     createdAt: '03-06-2022',
+        //     dueDate: '25-12-2018',
+        //     modifiedDate: '19-12-2018',
+        //     priority: 'High',
+        //     location: 'Karachi',
+        //     priorityNum: 3,
+        //     isDone: true,
+        //     isLate: false,
+        // },
+    // ])
 
     useEffect(() => {
         document.addEventListener("click", handleClick);
@@ -106,12 +107,25 @@ const Todo = () => {
     useEffect(() => {
         getDate()
         getLatLong()
-        setSearchedData(data)
+        if (savedData)
+        {
+            const temp = JSON.parse(savedData)
+            setData(temp)
+            console.log('run', temp);
+        }
     }, [])
+
+    console.log('data', data);
     
     useEffect(() => {
         handleDueDate()
+        setSearchedData(data)
     }, [today])
+
+    useEffect(() => {
+        // const temp = JSON.stringify(data)
+        // localStorage.setItem('data', JSON.stringify(data))
+    }, [data])
 
     useEffect(() => {
         // getLocation()
@@ -194,200 +208,95 @@ const Todo = () => {
     }
 
     const toggleSortCreated = () => {
-        if (isFiltered)
-        {
-            searchedData.sort(function (a, b) {
-                if(sortOrder === 'asc')
-                {
-                    setSortOrder('desc')
-                    const item1 = a.createdAt.split('-'),
-                        item2 = b.createdAt.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-                else if(sortOrder === 'desc')
-                {
-                    setSortOrder('asc')
-                    const item2 = a.createdAt.split('-'),
-                        item1 = b.createdAt.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-            });
-            setSortBy('created')
-        }
-        else
-        {
-            data.sort(function (a, b) {
-                if(sortOrder === 'asc')
-                {
-                    setSortOrder('desc')
-                    const item1 = a.createdAt.split('-'),
-                        item2 = b.createdAt.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-                else if(sortOrder === 'desc')
-                {
-                    setSortOrder('asc')
-                    const item2 = a.createdAt.split('-'),
-                        item1 = b.createdAt.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-            });
-            setSortBy('created')
-        }
+        searchedData.sort(function (a, b) {
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                const item1 = a.createdAt.split('-'),
+                    item2 = b.createdAt.split('-');
+                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                const item2 = a.createdAt.split('-'),
+                    item1 = b.createdAt.split('-');
+                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+            }
+        });
+        setSortBy('created')
     }
 
     const toggleSortDue = () => {
-        if (isFiltered)
-        {
-            searchedData.sort(function (a, b) {
-                if(sortOrder === 'asc')
-                {
-                    setSortOrder('desc')
-                    const item1 = a.dueDate.split('-'),
-                        item2 = b.dueDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-                else if(sortOrder === 'desc')
-                {
-                    setSortOrder('asc')
-                    const item2 = a.dueDate.split('-'),
-                        item1 = b.dueDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-            });
-            setSortBy('due')
-        }
-        else
-        {
-            data.sort(function (a, b) {
-                if(sortOrder === 'asc')
-                {
-                    setSortOrder('desc')
-                    const item1 = a.dueDate.split('-'),
-                        item2 = b.dueDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-                else if(sortOrder === 'desc')
-                {
-                    setSortOrder('asc')
-                    const item2 = a.dueDate.split('-'),
-                        item1 = b.dueDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-            });
-            setSortBy('due')
-        }
+        searchedData.sort(function (a, b) {
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                const item1 = a.dueDate.split('-'),
+                    item2 = b.dueDate.split('-');
+                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                const item2 = a.dueDate.split('-'),
+                    item1 = b.dueDate.split('-');
+                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+            }
+        });
+        setSortBy('due')
     }
 
     const toggleSortModified = () => {
-        if (isFiltered)
-        {
-            searchedData.sort(function (a, b) {
-                if(sortOrder === 'asc')
-                {
-                    setSortOrder('desc')
-                    const item1 = a.modifiedDate.split('-'),
-                        item2 = b.modifiedDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-                else if(sortOrder === 'desc')
-                {
-                    setSortOrder('asc')
-                    const item2 = a.modifiedDate.split('-'),
-                        item1 = b.modifiedDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-            });
-            setSortBy('modified')
-        }
-        else
-        {
-            data.sort(function (a, b) {
-                if(sortOrder === 'asc')
-                {
-                    setSortOrder('desc')
-                    const item1 = a.modifiedDate.split('-'),
-                        item2 = b.modifiedDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-                else if(sortOrder === 'desc')
-                {
-                    setSortOrder('asc')
-                    const item2 = a.modifiedDate.split('-'),
-                        item1 = b.modifiedDate.split('-');
-                    return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
-                }
-            });
-            setSortBy('modified')
-        }
+        searchedData.sort(function (a, b) {
+            if(sortOrder === 'asc')
+            {
+                setSortOrder('desc')
+                const item1 = a.modifiedDate.split('-'),
+                    item2 = b.modifiedDate.split('-');
+                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+            }
+            else if(sortOrder === 'desc')
+            {
+                setSortOrder('asc')
+                const item2 = a.modifiedDate.split('-'),
+                    item1 = b.modifiedDate.split('-');
+                return item1[2] - item2[2] || item1[1] - item2[1] || item1[0] - item2[0];
+            }
+        });
+        setSortBy('modified')
     }
 
     const toggleSortTask = () => {
-        if (isFiltered)
+        if(sortOrder === 'asc')
         {
-            if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                searchedData.sort((a,b) => (a.taskName > b.taskName) ? 1 : ((b.taskName > a.taskName) ? -1 : 0))
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                searchedData.sort((a,b) => (a.taskName < b.taskName) ? 1 : ((b.taskName < a.taskName) ? -1 : 0))
-            }
-            setSortBy('task')
+            setSortOrder('desc')
+            searchedData.sort((a,b) => (a.taskName > b.taskName) ? 1 : ((b.taskName > a.taskName) ? -1 : 0))
         }
-        else
+        else if(sortOrder === 'desc')
         {
-            if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                data.sort((a,b) => (a.taskName > b.taskName) ? 1 : ((b.taskName > a.taskName) ? -1 : 0))
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                data.sort((a,b) => (a.taskName < b.taskName) ? 1 : ((b.taskName < a.taskName) ? -1 : 0))
-            }
-            setSortBy('task')
+            setSortOrder('asc')
+            searchedData.sort((a,b) => (a.taskName < b.taskName) ? 1 : ((b.taskName < a.taskName) ? -1 : 0))
         }
+        setSortBy('task')
     }
 
     const toggleSortLocation = () => {
-        if (isFiltered)
+        if(sortOrder === 'asc')
         {
-            if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                searchedData.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                searchedData.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
-            }
-            setSortBy('location')
+            setSortOrder('desc')
+            searchedData.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
         }
-        else
+        else if(sortOrder === 'desc')
         {
-            if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                data.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                data.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
-            }
-            setSortBy('location')
+            setSortOrder('asc')
+            searchedData.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
         }
+        setSortBy('location')
     }
 
     const toggleSortPriority = () => {
-        if (isFiltered)
-        {
-            if(sortOrder === 'asc')
+        if(sortOrder === 'asc')
             {
                 setSortOrder('desc')
                 searchedData.sort((a,b) => a.priorityNum - b.priorityNum)
@@ -398,65 +307,26 @@ const Todo = () => {
                 searchedData.sort((a,b) => b.priorityNum - a.priorityNum)
             }
             setSortBy('priority')
-        }
-        else
-        {
-            if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                data.sort((a,b) => a.priorityNum - b.priorityNum)
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                data.sort((a,b) => b.priorityNum - a.priorityNum)
-            }
-            setSortBy('priority')
-        }
     }
 
     const handleOrder = (value, index) => {
-        if (isFiltered)
+        if (value === 'up')
         {
-            if (value === 'up')
-            {
-                const tempData = searchedData
-                let a = tempData[index-1]
-                let b = tempData[index]
-                tempData[index-1] = b
-                tempData[index] = a
-                setSearchedData([...tempData])
-            }
-            else if (value === 'down')
-            {
-                const tempData = searchedData
-                let a = tempData[index]
-                let b = tempData[index+1]
-                tempData[index] = b
-                tempData[index+1] = a
-                setSearchedData([...tempData])
-            }
+            const tempData = searchedData
+            let a = tempData[index-1]
+            let b = tempData[index]
+            tempData[index-1] = b
+            tempData[index] = a
+            setSearchedData([...tempData])
         }
-        else
+        else if (value === 'down')
         {
-            if (value === 'up')
-            {
-                const tempData = data
-                let a = tempData[index-1]
-                let b = tempData[index]
-                tempData[index-1] = b
-                tempData[index] = a
-                setData([...tempData])
-            }
-            else if (value === 'down')
-            {
-                const tempData = data
-                let a = tempData[index]
-                let b = tempData[index+1]
-                tempData[index] = b
-                tempData[index+1] = a
-                setData([...tempData])
-            }
+            const tempData = searchedData
+            let a = tempData[index]
+            let b = tempData[index+1]
+            tempData[index] = b
+            tempData[index+1] = a
+            setSearchedData([...tempData])
         }
     }
 
@@ -465,6 +335,7 @@ const Todo = () => {
         tempData[index].isDone === true ? tempData[index].isDone = false : tempData[index].isDone = true
         setData([...tempData])
         setSearchedData([...tempData])
+        // localStorage.setItem('data', JSON.stringify([...data, tempData]))
     }
 
     const handlePriority = (e) => {
@@ -490,6 +361,7 @@ const Todo = () => {
         newData[index].taskName = newTaskName
         setData([...newData])
         setSearchedData([...newData])
+        // localStorage.setItem('data', JSON.stringify([newData]))
     }
 
     const handleEditIndex = (index) => {
@@ -505,6 +377,7 @@ const Todo = () => {
         const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, location, id}
         setData([...data, newTask])
         setSearchedData([...data, newTask])
+        // localStorage.setItem('data', JSON.stringify([...data, newTask]))
     }
 
     const handleEditTask = () => {
@@ -517,12 +390,14 @@ const Todo = () => {
         newData[editIndex].modifiedDate = today
         setData([...data, newData])
         setSearchedData([...data, newData])
+        // localStorage.setItem('data', JSON.stringify([...data, newData]))
     }
 
     const handleDelete = (id) => {
         const tempData = data.filter((item, index) => item.id !== id )
         setData(tempData)
         setSearchedData(tempData)
+        // localStorage.setItem('data', JSON.stringify(tempData))
     }
 
     const handleSearchResult = () => {
@@ -606,6 +481,8 @@ const Todo = () => {
                         </div>
                     )
                 })}
+                {data.length == 0 && <p>Currently there is no task, add a task to view</p>}
+                {data.length > 0 && searchedData.length === 0 && <p>Can not find any task with this name search another task name</p>}
             </div>
             <div>
                 <h1>ADD TASK</h1>
