@@ -48,7 +48,7 @@ const Todo = () => {
     }, [today])
 
     useEffect(() => {
-        // getLocation()
+        getLocation()
     }, [lat, long])
 
     const getInitialData = () => {

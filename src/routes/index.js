@@ -4,17 +4,17 @@ import Loader from '../components/Loader'
 
 const LandingPage = lazy(() => {
     return new Promise((resolve) => {
-        setTimeout(() => resolve(import('../pages/LandingPage')), 0)
+        setTimeout(() => resolve(import('../pages/LandingPage')), 3000)
     })
 })
 const Login = lazy(() => {
     return new Promise((resolve) => {
-        setTimeout(() => resolve(import('../pages/Login')), 0)
+        setTimeout(() => resolve(import('../pages/Login')), 1500)
     })
 })
 const Todo = lazy(() => {
     return new Promise((resolve) => {
-        setTimeout(() => resolve(import('../pages/Todo')), 0)
+        setTimeout(() => resolve(import('../pages/Todo')), 1500)
     })
 })
 
