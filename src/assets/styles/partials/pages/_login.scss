@@ -10,7 +10,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 50px;
+        margin-top: 20px;
     }
 
     &_box
@@ -73,6 +73,12 @@
     &_logo
     {
         width: 180px;
+    }
+
+    &_err
+    {
+        text-align: center;
+        color: $primary;
     }
 }
 

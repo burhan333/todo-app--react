@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
+import { toast } from "react-toastify"
+
 import ArrUp1 from '../../assets/images/arrow-up1.png'
 import ArrUp2 from '../../assets/images/arrow-up2.png'
 import ArrDown1 from '../../assets/images/arrow-down1.png'
@@ -8,8 +10,7 @@ import Logo from '../../assets/images/logo.png'
 
 const Todo = () => {
 
-    // const [createdAt, setCreatedAt] = useState('')
-    // const [modifiedDate, setModifiedDate] = useState('')
+    const [data, setData] = useState([])
     const [taskName, setTaskName] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [newDueDate, setNewDueDate] = useState('')
@@ -31,91 +32,15 @@ const Todo = () => {
     const [add, setAdd] = useState(false)
     const [ids, setIds] = useState([])
     const [deleteAll, setDeleteAll] = useState(false)
-    // const [editId, setEditId] = useState(0)
-    // const [isFiltered, setIsFiltered] = useState(false)
     const savedData = localStorage.getItem('data')
     const componentRef = useRef()
     const API_KEY = process.env.REACT_APP_API_KEY
-    const [data, setData] = useState([])
-    // const [data, setData] = useState([
-    //     {
-    //         id: 1,
-    //         taskName: 'Study in canada',
-    //         createdAt: '06-01-2019',
-    //         dueDate: '03-06-2022',
-    //         modifiedDate: '07-01-2019',
-    //         priority: 'Low',
-    //         location: 'Karachi',
-    //         priorityNum: 1,
-    //         isDone: true,
-    //         isLate: false,
-    //     },
-    //     {
-    //         id: 2,
-    //         taskName: 'Development',
-    //         createdAt: '29-09-2020',
-    //         dueDate: '05-06-2022',
-    //         modifiedDate: '02-10-2020',
-    //         priority: 'Medium',
-    //         location: 'Lahore',
-    //         priorityNum: 2,
-    //         isDone: false,
-    //         isLate: false,
-    //     },
-    //     {
-    //         id: 3,
-    //         taskName: 'Go the park',
-    //         createdAt: '02-04-2022',
-    //         dueDate: '03-06-2021',
-    //         modifiedDate: '04-04-2022',
-    //         priority: 'High',
-    //         location: 'Islamabad',
-    //         priorityNum: 3,
-    //         isDone: false,
-    //         isLate: false,
-    //     },
-    //     {
-    //         id: 4,
-    //         taskName: 'Deployment on friday',
-    //         createdAt: '25-01-2021',
-    //         dueDate: '15-05-2022',
-    //         modifiedDate: '05-02-2021',
-    //         priority: 'High',
-    //         location: 'Karachi',
-    //         priorityNum: 3,
-    //         isDone: true,
-    //         isLate: false,
-    //     },
-    //     {
-    //         id: 5,
-    //         taskName: 'Deployment',
-    //         createdAt: '03-06-2022',
-    //         dueDate: '25-12-2018',
-    //         modifiedDate: '19-12-2018',
-    //         priority: 'High',
-    //         location: 'Karachi',
-    //         priorityNum: 3,
-    //         isDone: true,
-    //         isLate: false,
-    //     },
-    // ])
-
-    useEffect(() => {
-        document.addEventListener("click", handleClick);
-        return () => document.removeEventListener("click", handleClick);
-        function handleClick(e) {
-            if(componentRef && componentRef.current){
-                const ref = componentRef.current
-                if(!ref.contains(e.target)){
-                    setShowSearchList(false)
-                }
-            }
-        }
-    }, []);
+    toast.configure()
 
     useEffect(() => {
         getDate()
         getLatLong()
+        handleClickOutside()
     }, [])
     
     useEffect(() => {
@@ -162,7 +87,18 @@ const Todo = () => {
         }
     }
 
-    console.log('ids', ids);
+    const handleClickOutside = () => {
+        document.addEventListener("click", handleClick);
+        return () => document.removeEventListener("click", handleClick);
+        function handleClick(e) {
+            if(componentRef && componentRef.current){
+                const ref = componentRef.current
+                if(!ref.contains(e.target)){
+                    setShowSearchList(false)
+                }
+            }
+        }
+    }
 
     const getLocation = () => {
         if (lat && long)
@@ -382,10 +318,6 @@ const Todo = () => {
         setPriority(data[index].priority)
     }
 
-    // console.log('data', data);
-
-    // console.log('edit Index', editIndex);
-
     const handleAddtask = () => {
         const id = ids.length+1
         const tempDate = dueDate.split('-').reverse().join('-')
@@ -394,6 +326,17 @@ const Todo = () => {
         setSearchedData([...data, newTask])
         localStorage.setItem('data', JSON.stringify([...data, newTask]))
         setIds([...ids, id])
+        setAdd(false)
+
+        toast.success('Task Added', {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
     }
 
     const handleEditTask = () => {
@@ -407,6 +350,18 @@ const Todo = () => {
         setData([...newData])
         setSearchedData([...newData])
         localStorage.setItem('data', JSON.stringify([...newData]))
+
+        setEditIndex(-1)
+
+        toast.warn('Task Edited', {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
     }
 
     const handleDelete = (id) => {
@@ -414,6 +369,17 @@ const Todo = () => {
         setData(tempData)
         setSearchedData(tempData)
         localStorage.setItem('data', JSON.stringify(tempData))
+        // toast("Task is Deleted");
+
+        toast.error('Task Deleted!', {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
     }
 
     const handleSearchResult = () => {
@@ -451,6 +417,17 @@ const Todo = () => {
         setData([])
         setSearchedData([])
         localStorage.setItem('data', JSON.stringify([]))
+        setDeleteAll(false)
+
+        toast.error('All Task Deleted!', {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
     }
     
     const handleLogout = () => {
@@ -466,7 +443,14 @@ const Todo = () => {
             </div>
             <div className="todo_body">
                 <div className="todo_search" ref={componentRef}>
-                    <input type="search" placeholder='Search Task' value={search} onKeyDown={(e) => handleKey(e)} onChange={(e) => handleSearch(e)} onFocus={() => setShowSearchList(true)} />
+                    <input 
+                        type="search" 
+                        placeholder='Search Task' 
+                        value={search} 
+                        onKeyDown={(e) => handleKey(e)} 
+                        onChange={(e) => handleSearch(e)} 
+                        onFocus={() => setShowSearchList(true)} 
+                    />
                     <button onClick={handleSearchResult}>Search</button>
                     {updatedSearchList.length > 0 && showSearchList && <div className="todo_list">
                         <p className='todo_recent'>Recent Searches</p>
@@ -509,7 +493,10 @@ const Todo = () => {
                                 <div className="todo_check">
                                     <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
                                 </div>
-                                <div className='todo_updown'><button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}><img src={ArrUp1} /> </button> <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}><img src={ArrDown1} /></button></div>
+                                <div className='todo_updown'>
+                                    <button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}><img src={ArrUp1} /> </button>
+                                    <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}><img src={ArrDown1} /></button>
+                                </div>
                                 <div className="todo_actio">
                                     <button className='todo_edit' onClick={() => {handleEditIndex(item.id)}}> EDIT</button>
                                     <button className='todo_delete' onClick={() => handleDelete(item.id)}>DELETE</button>
@@ -521,7 +508,7 @@ const Todo = () => {
                 {data.length == 0 && <p className='todo_err'>Currently there is no task, add a task to view</p>}
                 {data.length > 0 && searchedData.length === 0 && <p className='todo_err'>Can not find any task with this name search another task name</p>}
                 <div className="todo_btns">
-                    <button onClick={() => setDeleteAll(true)} >DELETE ALL</button>
+                    <button onClick={() => setDeleteAll(true)} disabled={searchedData.length > 0 ? false : true} >DELETE ALL</button>
                     <button onClick={() => setAdd(true)}>ADD TASK</button>
                 </div>
             </div>
@@ -568,8 +555,8 @@ const Todo = () => {
             <div className={deleteAll ? 'add add_active' : 'add'}>
                 <div className="add_inner">
                     <p className="add_title">Are you sure you want to delete all task</p>
-                        <button className='add_btn' onClick={handleDeleteAll}>DELETE</button>
-                        <button className='add_btn' onClick={() => setDeleteAll(false)}>CANCEL</button>
+                    <button className='add_btn' onClick={handleDeleteAll}>DELETE</button>
+                    <button className='add_btn' onClick={() => setDeleteAll(false)}>CANCEL</button>
                 </div>
             </div>
         </div>
@@ -577,9 +564,3 @@ const Todo = () => {
 }
 
 export default Todo
-
-
-// make sort 1 func
-// design checkbox
-// good icon for sort
-// toss notifications
