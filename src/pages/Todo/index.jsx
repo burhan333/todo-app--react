@@ -23,72 +23,73 @@ const Todo = () => {
     const [lat, setLat] = useState(0)
     const [long, setLong] = useState(0)
     const [searchedData, setSearchedData] = useState([])
-    const [isFiltered, setIsFiltered] = useState(false)
+    // const [editId, setEditId] = useState(0)
+    // const [isFiltered, setIsFiltered] = useState(false)
     const savedData = localStorage.getItem('data')
     const componentRef = useRef()
     const API_KEY = process.env.REACT_APP_API_KEY
     const [data, setData] = useState([])
     // const [data, setData] = useState([
-        // {
-        //     id: 1,
-        //     taskName: 'Study in canada',
-        //     createdAt: '06-01-2019',
-        //     dueDate: '03-06-2022',
-        //     modifiedDate: '07-01-2019',
-        //     priority: 'Low',
-        //     location: 'Karachi',
-        //     priorityNum: 1,
-        //     isDone: true,
-        //     isLate: false,
-        // },
-        // {
-        //     id: 2,
-        //     taskName: 'Development',
-        //     createdAt: '29-09-2020',
-        //     dueDate: '05-06-2022',
-        //     modifiedDate: '02-10-2020',
-        //     priority: 'Medium',
-        //     location: 'Lahore',
-        //     priorityNum: 2,
-        //     isDone: false,
-        //     isLate: false,
-        // },
-        // {
-        //     id: 3,
-        //     taskName: 'Go the park',
-        //     createdAt: '02-04-2022',
-        //     dueDate: '03-06-2021',
-        //     modifiedDate: '04-04-2022',
-        //     priority: 'High',
-        //     location: 'Islamabad',
-        //     priorityNum: 3,
-        //     isDone: false,
-        //     isLate: false,
-        // },
-        // {
-        //     id: 4,
-        //     taskName: 'Deployment on friday',
-        //     createdAt: '25-01-2021',
-        //     dueDate: '15-05-2022',
-        //     modifiedDate: '05-02-2021',
-        //     priority: 'High',
-        //     location: 'Karachi',
-        //     priorityNum: 3,
-        //     isDone: true,
-        //     isLate: false,
-        // },
-        // {
-        //     id: 5,
-        //     taskName: 'Deployment',
-        //     createdAt: '03-06-2022',
-        //     dueDate: '25-12-2018',
-        //     modifiedDate: '19-12-2018',
-        //     priority: 'High',
-        //     location: 'Karachi',
-        //     priorityNum: 3,
-        //     isDone: true,
-        //     isLate: false,
-        // },
+    //     {
+    //         id: 1,
+    //         taskName: 'Study in canada',
+    //         createdAt: '06-01-2019',
+    //         dueDate: '03-06-2022',
+    //         modifiedDate: '07-01-2019',
+    //         priority: 'Low',
+    //         location: 'Karachi',
+    //         priorityNum: 1,
+    //         isDone: true,
+    //         isLate: false,
+    //     },
+    //     {
+    //         id: 2,
+    //         taskName: 'Development',
+    //         createdAt: '29-09-2020',
+    //         dueDate: '05-06-2022',
+    //         modifiedDate: '02-10-2020',
+    //         priority: 'Medium',
+    //         location: 'Lahore',
+    //         priorityNum: 2,
+    //         isDone: false,
+    //         isLate: false,
+    //     },
+    //     {
+    //         id: 3,
+    //         taskName: 'Go the park',
+    //         createdAt: '02-04-2022',
+    //         dueDate: '03-06-2021',
+    //         modifiedDate: '04-04-2022',
+    //         priority: 'High',
+    //         location: 'Islamabad',
+    //         priorityNum: 3,
+    //         isDone: false,
+    //         isLate: false,
+    //     },
+    //     {
+    //         id: 4,
+    //         taskName: 'Deployment on friday',
+    //         createdAt: '25-01-2021',
+    //         dueDate: '15-05-2022',
+    //         modifiedDate: '05-02-2021',
+    //         priority: 'High',
+    //         location: 'Karachi',
+    //         priorityNum: 3,
+    //         isDone: true,
+    //         isLate: false,
+    //     },
+    //     {
+    //         id: 5,
+    //         taskName: 'Deployment',
+    //         createdAt: '03-06-2022',
+    //         dueDate: '25-12-2018',
+    //         modifiedDate: '19-12-2018',
+    //         priority: 'High',
+    //         location: 'Karachi',
+    //         priorityNum: 3,
+    //         isDone: true,
+    //         isLate: false,
+    //     },
     // ])
 
     useEffect(() => {
@@ -107,19 +108,13 @@ const Todo = () => {
     useEffect(() => {
         getDate()
         getLatLong()
-        if (savedData)
-        {
-            const temp = JSON.parse(savedData)
-            setData(temp)
-            console.log('run', temp);
-        }
     }, [])
 
     console.log('data', data);
+    console.log('search data', searchedData);
     
     useEffect(() => {
-        handleDueDate()
-        setSearchedData(data)
+        getInitialData()
     }, [today])
 
     useEffect(() => {
@@ -128,32 +123,43 @@ const Todo = () => {
     }, [data])
 
     useEffect(() => {
-        // getLocation()
+        getLocation()
     }, [lat, long])
 
-    const handleDueDate = () => {
-        const array = []
-        data.forEach((item, index) => {
-            let obj = {...data[index]}
-            const tempToday = today.split('-')
-            const tempDue = data[index].dueDate.split('-')
+    const getInitialData = () => {
+        if (savedData)
+        {
+            console.log('run1');
+            const tempData = JSON.parse(savedData)
+            if (tempData.length > 0)
+            {
+                console.log('run2');
+                console.log('temp lenght', tempData.length, typeof(tempData));
+                const array = []
+                tempData.forEach((item, index) => {
+                    let obj = {...tempData[index]}
+                    const tempToday = today.split('-')
+                    const tempDue = tempData[index].dueDate.split('-')
+            
+                    if (tempToday[2] > tempDue[2])
+                    {
+                        obj.isLate = true
+                    }
+                    else if (tempToday[1] > tempDue[1])
+                    {
+                        obj.isLate = true
+                    }
+                    else if (tempToday[0] > tempDue[0])
+                    {
+                        obj.isLate = true
+                    }
     
-            if (tempToday[2] > tempDue[2])
-            {
-                obj.isLate = true
+                    array.push(obj)
+                })
+                setData(array)
+                setSearchedData(array)
             }
-            else if (tempToday[1] > tempDue[1])
-            {
-                obj.isLate = true
-            }
-            else if (tempToday[0] > tempDue[0])
-            {
-                obj.isLate = true
-            }
-
-            array.push(obj)
-        })
-        setData(array)
+        }
     }
 
     const getLocation = () => {
@@ -296,17 +302,18 @@ const Todo = () => {
     }
 
     const toggleSortPriority = () => {
+        console.log('run');
         if(sortOrder === 'asc')
-            {
-                setSortOrder('desc')
-                searchedData.sort((a,b) => a.priorityNum - b.priorityNum)
-            }
-            else if(sortOrder === 'desc')
-            {
-                setSortOrder('asc')
-                searchedData.sort((a,b) => b.priorityNum - a.priorityNum)
-            }
-            setSortBy('priority')
+        {
+            setSortOrder('desc')
+            searchedData.sort((a,b) => a.priorityNum - b.priorityNum)
+        }
+        else if(sortOrder === 'desc')
+        {
+            setSortOrder('asc')
+            searchedData.sort((a,b) => b.priorityNum - a.priorityNum)
+        }
+        setSortBy('priority')
     }
 
     const handleOrder = (value, index) => {
@@ -335,7 +342,7 @@ const Todo = () => {
         tempData[index].isDone === true ? tempData[index].isDone = false : tempData[index].isDone = true
         setData([...tempData])
         setSearchedData([...tempData])
-        // localStorage.setItem('data', JSON.stringify([...data, tempData]))
+        localStorage.setItem('data', JSON.stringify([...data, tempData]))
     }
 
     const handlePriority = (e) => {
@@ -361,14 +368,14 @@ const Todo = () => {
         newData[index].taskName = newTaskName
         setData([...newData])
         setSearchedData([...newData])
-        // localStorage.setItem('data', JSON.stringify([newData]))
+        localStorage.setItem('data', JSON.stringify([...newData]))
     }
 
     const handleEditIndex = (index) => {
-        setEditIndex(index)
-        setTaskName(data[index].taskName)
-        setDueDate(data[index].dueDate)
-        setPriority(data[index].priority)
+        setEditIndex(index-1)
+        setTaskName(data[index-1].taskName)
+        setDueDate(data[index-1].dueDate)
+        setPriority(data[index-1].priority)
     }
 
     const handleAddtask = () => {
@@ -377,7 +384,7 @@ const Todo = () => {
         const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, location, id}
         setData([...data, newTask])
         setSearchedData([...data, newTask])
-        // localStorage.setItem('data', JSON.stringify([...data, newTask]))
+        localStorage.setItem('data', JSON.stringify([...data, newTask]))
     }
 
     const handleEditTask = () => {
@@ -388,16 +395,16 @@ const Todo = () => {
         newData[editIndex].priority = priority
         newData[editIndex].priorityNum = priorityNum
         newData[editIndex].modifiedDate = today
-        setData([...data, newData])
-        setSearchedData([...data, newData])
-        // localStorage.setItem('data', JSON.stringify([...data, newData]))
+        setData([...newData])
+        setSearchedData([...newData])
+        localStorage.setItem('data', JSON.stringify([...newData]))
     }
 
     const handleDelete = (id) => {
         const tempData = data.filter((item, index) => item.id !== id )
         setData(tempData)
         setSearchedData(tempData)
-        // localStorage.setItem('data', JSON.stringify(tempData))
+        localStorage.setItem('data', JSON.stringify(tempData))
     }
 
     const handleSearchResult = () => {
@@ -409,7 +416,7 @@ const Todo = () => {
 
         const newData = search ? data.filter(item => item.taskName.toLowerCase().includes(search.toLowerCase())) : data
         setSearchedData(newData)
-        setIsFiltered(search ? true : false)
+        setShowSearchList(false)
     }
 
     const handleSearch = (e) => {
@@ -431,23 +438,36 @@ const Todo = () => {
         setUpdatedSearchList([])
     }
 
+    const handleDeleteAll = () => {
+        setData([])
+        setSearchedData([])
+        localStorage.setItem('data', JSON.stringify([]))
+    }
+    
+    const handleLogout = () => {
+        localStorage.removeItem('isLoggedIn')
+        window.location.reload()
+    }
+
     return(
         <div className="todo">
             <div className="todo_top">
                 <img src={Logo} alt="logo" className='todo_logo' />
-                <a href="#">Logout</a>
+                <a href="#" onClick={handleLogout}>Logout</a>
             </div>
             <div className="todo_body">
                 <div className="todo_search" ref={componentRef}>
                     <input type="search" placeholder='Search Task' value={search} onKeyDown={(e) => handleKey(e)} onChange={(e) => handleSearch(e)} onFocus={() => setShowSearchList(true)} />
                     <button onClick={handleSearchResult}>Search</button>
                     {updatedSearchList.length > 0 && showSearchList && <div className="todo_list">
-                        <p>Recent Searches</p>
-                        {updatedSearchList.map((item, index) => {
-                            return(
-                                <p className='todo_savedText' key={index} onClick={() => setSearch(item)}>{item}</p>
-                            )
-                        })}
+                        <p className='todo_recent'>Recent Searches</p>
+                        <div className="todo_listInner">
+                            {updatedSearchList.map((item, index) => {
+                                return(
+                                    <p className='todo_savedText' key={index} onClick={() => setSearch(item)}>{item}</p>
+                                )
+                            })}
+                        </div>
                         <p className='todo_clear' onClick={clearSearch}>Clear Recent Searches</p>
                     </div>}
                 </div>
@@ -476,7 +496,7 @@ const Todo = () => {
                             <p>{item.location}</p>
                             <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
                             <p><button disabled={index === 0 ? true : false} onClick={() => handleOrder('up', index)}>UP</button> <button disabled={index === data.length-1 ? true : false} onClick={() => handleOrder('down', index)}>DOWN</button></p>
-                            <button onClick={() => handleEditIndex(index)}> EDIT</button>
+                            <button onClick={() => {handleEditIndex(item.id)}}> EDIT</button>
                             <button onClick={() => handleDelete(item.id)}>DELETE</button>
                         </div>
                     )
@@ -484,6 +504,7 @@ const Todo = () => {
                 {data.length == 0 && <p>Currently there is no task, add a task to view</p>}
                 {data.length > 0 && searchedData.length === 0 && <p>Can not find any task with this name search another task name</p>}
             </div>
+            <button onClick={handleDeleteAll}>DELETE ALL</button>
             <div>
                 <h1>ADD TASK</h1>
                 <input type="text" placeholder='Task Name' onChange={(e) => setTaskName(e.target.value)} />

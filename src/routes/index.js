@@ -1,5 +1,5 @@
 import {lazy, Suspense} from 'react'
-import {Routes, Route, BrowserRouter} from 'react-router-dom'
+import {Routes, Route, BrowserRouter, Navigate} from 'react-router-dom'
 import Loader from '../components/Loader'
 
 const LandingPage = lazy(() => {
@@ -19,13 +19,15 @@ const Todo = lazy(() => {
 })
 
 export const MyRoutes = () => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn')
     return(
         <BrowserRouter>
             <Suspense fallback={<Loader/>}>
                 <Routes>
-                    <Route path="/" element={<LandingPage/>} />
-                    <Route path="/login" element={<Login/>} />
-                    <Route path="/home" element={<Todo/>} />
+                    {isLoggedIn !== 'true' && <Route path="/" element={<LandingPage/>} />}
+                    {isLoggedIn !== 'true' && <Route path="/login" element={<Login/>} />}
+                    {isLoggedIn === 'true' && <Route path="/home" element={<Todo/>} />}
+                    <Route path="*" element={isLoggedIn === 'true' ? <Navigate to="/home" replace /> : <Navigate to="/" replace />} />
                 </Routes>
             </Suspense>
         </BrowserRouter>
