@@ -21,7 +21,6 @@ const Todo = () => {
     const [today, setToday] = useState('')
     const [renameIndex, setRenameIndex] = useState(-1)
     const [editIndex, setEditIndex] = useState(-1)
-    const [location, setLocation] = useState('')
     const [searchList, setSearchList] = useState([])
     const [updatedSearchList, setUpdatedSearchList] = useState([])
     const [search, setSearch] = useState('')
@@ -39,17 +38,12 @@ const Todo = () => {
 
     useEffect(() => {
         getDate()
-        getLatLong()
         handleClickOutside()
     }, [])
     
     useEffect(() => {
         getInitialData()
     }, [today])
-
-    useEffect(() => {
-        getLocation()
-    }, [lat, long])
 
     const getInitialData = () => {
         if (savedData)
@@ -98,39 +92,6 @@ const Todo = () => {
                 }
             }
         }
-    }
-
-    const getLocation = () => {
-        if (lat && long)
-        {
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat + ',' + long} &key=${API_KEY}`
-            fetch(url, { method: 'GET' }).then(res => res.json())
-            .then(res => {
-                let mainarr = res.results
-                let city = ''
-                var english = /^[0-9A-Za-z\s\-]+$/
-    
-                for (let i = 0; i < mainarr.length; i++)
-                {
-                    for (let j = 0; j < mainarr[i].address_components.length; j++) {
-                        if (english.test(mainarr[i].address_components[j].short_name)) {
-                            if (mainarr[i].address_components[j].types.includes('locality')) {
-                                city = mainarr[i].address_components[j].short_name ? mainarr[i].address_components[j].short_name : city;
-                            }
-                        }
-                    }
-                    if(city) break
-                }
-                setLocation(city)
-            })
-        }
-    }
-
-    const getLatLong = () => {
-        navigator.geolocation.getCurrentPosition((e) => {
-            setLat(e.coords.latitude);
-            setLong(e.coords.longitude);
-        })
     }
 
     const getDate = () => {
@@ -225,20 +186,6 @@ const Todo = () => {
         setSortBy('task')
     }
 
-    const toggleSortLocation = () => {
-        if(sortOrder === 'asc')
-        {
-            setSortOrder('desc')
-            searchedData.sort((a,b) => (a.location > b.location) ? 1 : ((b.location > a.location) ? -1 : 0))
-        }
-        else if(sortOrder === 'desc')
-        {
-            setSortOrder('asc')
-            searchedData.sort((a,b) => (a.location < b.location) ? 1 : ((b.location < a.location) ? -1 : 0))
-        }
-        setSortBy('location')
-    }
-
     const toggleSortPriority = () => {
         if(sortOrder === 'asc')
         {
@@ -321,7 +268,7 @@ const Todo = () => {
     const handleAddtask = () => {
         const id = ids.length+1
         const tempDate = dueDate.split('-').reverse().join('-')
-        const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, location, id}
+        const newTask = {taskName, createdAt: today, dueDate: tempDate, modifiedDate: today, priority, priorityNum, isDone: false, isLate: false, id}
         setData([...data, newTask])
         setSearchedData([...data, newTask])
         localStorage.setItem('data', JSON.stringify([...data, newTask]))
@@ -471,7 +418,6 @@ const Todo = () => {
                     <p className={sortBy === 'due' ? 'active' : ''} onClick={toggleSortDue}>DUE DATE {sortBy === 'due' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
                     <p className={sortBy === 'modified' ? 'active' : ''} onClick={toggleSortModified}>MODIFIED DATE {sortBy === 'modified' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
                     <p className={sortBy === 'priority' ? 'active' : ''} onClick={toggleSortPriority}>PRIORITY {sortBy === 'priority' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
-                    <p className={sortBy === 'location' ? 'active' : ''} onClick={toggleSortLocation}>Location {sortBy === 'location' && (sortOrder ==='asc' ? <img src={ArrUp2} /> : <img src={ArrDown2} />)}</p>
                     <p>MARK AS DONE</p>
                     <p>REORDER TASK</p>
                     <p>ACTIONS</p>
@@ -489,7 +435,6 @@ const Todo = () => {
                                 <p className={item.isLate === true ? 'todo_late' : ''}>{item.dueDate}</p>
                                 <p>{item.modifiedDate}</p>
                                 <p>{item.priority}</p>
-                                <p>{item.location}</p>
                                 <div className="todo_check">
                                     <input type="checkbox" checked={item.isDone ? true : false} onChange={() => handleCheckBox(index)} />
                                 </div>
