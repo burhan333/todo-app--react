@@ -9,16 +9,17 @@ const Login = () => {
     const [err, setErr] = useState(false)
 
     const handleLogin = () => {
-        console.log('run');
-        if (email === 'demo@wavetec.com' && pass === '123456')
-        {
-            localStorage.setItem('isLoggedIn', true)
-            window.location.reload()
-        }
-        else
-        {
-            setErr(true)
-        }
+        localStorage.setItem('isLoggedIn', true)
+        window.location.reload()
+        // if (email === 'user@gmail.com' && pass === '123456')
+        // {
+        //     localStorage.setItem('isLoggedIn', true)
+        //     window.location.reload()
+        // }
+        // else
+        // {
+        //     setErr(true)
+        // }
     }
 
     console.log('pass', pass);
